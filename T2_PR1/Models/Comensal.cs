@@ -1,7 +1,4 @@
-﻿using System.Net.Sockets;
-using System.Reflection;
-
-namespace T2_PR1.Models
+﻿namespace T2_PR1.Models
 {
     internal class Comensal
     {
@@ -27,6 +24,7 @@ namespace T2_PR1.Models
         }
         public Chopstick LeftChopstick { get; set; }
         public Chopstick RightChopstick { get; set; }
+        public int RemainingFood { get; set; } = 10; // Inicialment hi ha 10 unitats de menjar
 
         public Comensal(int numComensal, Chopstick leftChopstick, Chopstick rightChopstick)
         {
@@ -35,7 +33,33 @@ namespace T2_PR1.Models
             RightChopstick = rightChopstick;
         }
 
-        public Thread GenerateComensalThread(object lockerAdd)
+        private ConsoleColor GenerateForegroundConsoleColor()
+        {
+            switch (NumComensal)
+            {
+                case 1:
+                    return ConsoleColor.DarkRed;
+                case 2:
+                    return ConsoleColor.DarkGray;
+                case 3:
+                    return ConsoleColor.DarkMagenta;
+                case 4:
+                    return ConsoleColor.DarkBlue;
+                case 5:
+                    return ConsoleColor.DarkGreen;
+                default:
+                    return Console.BackgroundColor;
+            }
+        }
+        private void WriteSomethingInColor(ConsoleColor bg, ConsoleColor fg, string msg)
+        {
+            Console.BackgroundColor = bg;
+            Console.ForegroundColor = fg;
+            Console.WriteLine(Action, NumComensal, msg);
+            Console.ResetColor();
+        }
+
+        public Thread GenerateComensalThread(object lockerAdd, object lockerConsole)
         {
             Random r = new Random();
             int timeThink = r.Next(MinThink, MaxThink + 1);
@@ -43,32 +67,45 @@ namespace T2_PR1.Models
 
             Thread comensal = new Thread(() =>
             {
-                // Pensa
-                Console.WriteLine(Action, NumComensal, "pensant...");
-                Thread.Sleep(timeThink);
-
-                // S'afegeix a la llista d'espera dels palets
-                // Només es pot afegir un a la llista a la vegada
-                lock (lockerAdd)
+                while (RemainingFood > 0)
                 {
-                    LeftChopstick.WantedByGuest.Add(NumComensal);
-                    RightChopstick.WantedByGuest.Add(NumComensal);
+                    // Pensa
+                    lock (lockerConsole)
+                    {
+                        WriteSomethingInColor(ConsoleColor.Yellow, GenerateForegroundConsoleColor(), "pensant...");
+                    }
+                    Thread.Sleep(timeThink);
+
+                    // S'afegeix a la llista d'espera dels palets
+                    // Només es pot afegir un a la llista a la vegada
+                    lock (lockerAdd)
+                    {
+                        LeftChopstick.WantedByGuest.Add(NumComensal);
+                        RightChopstick.WantedByGuest.Add(NumComensal);
+                    }
+
+                    lock (lockerConsole)
+                    {
+                        WriteSomethingInColor(ConsoleColor.White, GenerateForegroundConsoleColor(), "esperant els seus palets");
+                    }
+                    // Mentres no estigui a la posició [0] per menjar dels dos palets s'espera
+                    while (LeftChopstick.WantedByGuest[0] != NumComensal || RightChopstick.WantedByGuest[0] != NumComensal)
+                    {
+                        Thread.Sleep(1);
+                    }
+
+                    // Menja
+                    lock (lockerConsole)
+                    {
+                        WriteSomethingInColor(ConsoleColor.Green, GenerateForegroundConsoleColor(), "menjant!");
+                    }
+                    Thread.Sleep(timeEat);
+                    RemainingFood--;
+
+                    // Deixa els palets
+                    LeftChopstick.WantedByGuest.Remove(NumComensal);
+                    RightChopstick.WantedByGuest.Remove(NumComensal);
                 }
-
-                Console.WriteLine(Action, NumComensal, "esperant els seus palets");
-                // Mentres no estigui a la posició [0] per menjar dels dos palets s'espera
-                while (LeftChopstick.WantedByGuest[0] != NumComensal || RightChopstick.WantedByGuest[0] != NumComensal)
-                {
-                    Thread.Sleep(1);
-                }
-
-                // Menja
-                Console.WriteLine(Action, NumComensal, "menjant!");
-                Thread.Sleep(timeEat);
-
-                // Deixa els palets
-                LeftChopstick.WantedByGuest.Remove(NumComensal);
-                RightChopstick.WantedByGuest.Remove(NumComensal);
             });
             return comensal;
         }
