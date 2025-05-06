@@ -3,7 +3,6 @@
 public class Program()
 {
     private static object listLocker = new object();
-    private static readonly object consoleLocker = new object();
     public static void Main()
     {
         List<Thread> threads = new List<Thread>();
@@ -19,7 +18,7 @@ public class Program()
             Chopstick chopstickR = chopsticks[i];          
 
             Comensal comensal = new Comensal(i + 1, chopstickL, chopstickR);
-            threads.Add(comensal.GenerateComensalThread(listLocker, consoleLocker));
+            threads.Add(comensal.GenerateComensalThread(listLocker));
         }
 
         Console.Clear(); 
@@ -31,6 +30,19 @@ public class Program()
         foreach (Thread thread in threads)
         {
             thread.Join();
+        }
+
+        if (Comensal.HasSomeoneDiedOfHunger)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("\n (:c) La simulació ha acabat perquè un comensal ha mort de gana.");
+            Console.ResetColor();
+        }
+        else
+        {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("\n\n (:D) Tots els comensals han acabat de menjar.");
+            Console.ResetColor();
         }
     }
 }
