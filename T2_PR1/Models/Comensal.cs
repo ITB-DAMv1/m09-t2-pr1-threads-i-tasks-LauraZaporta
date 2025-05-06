@@ -30,6 +30,7 @@
         public Chopstick RightChopstick { get; set; }
         public int RemainingFood { get; set; } = 10; // Inicialment hi ha 10 unitats de menjar
         public DateTime LastTimeEating { get; set; } = DateTime.Now;
+        public List<double> TimesOfHunger { get; set; } = new List<double>();
 
         public Comensal(int numComensal, Chopstick leftChopstick, Chopstick rightChopstick)
         {
@@ -116,6 +117,8 @@
                         }
 
                         // Menja
+                        // Però primer registra el temps que ha estat en gana
+                        TimesOfHunger.Add((DateTime.Now - LastTimeEating).TotalMilliseconds);
                         lock (LockerConsole)
                         {
                             WriteSomethingInColor(ConsoleColor.Green, GenerateForegroundConsoleColor(), "menjant!");
