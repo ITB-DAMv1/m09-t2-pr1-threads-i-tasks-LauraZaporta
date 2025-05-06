@@ -43,7 +43,7 @@ public class Program()
         if (Comensal.HasSomeoneDiedOfHunger)
         {
             Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine("\n (:c) La simulació ha acabat perquè un comensal ha mort de gana.");
+            Console.WriteLine("\n (:c) La simulació ha acabat perquè un o diversos comensals han mort de gana.");
             Console.ResetColor();
         }
         else

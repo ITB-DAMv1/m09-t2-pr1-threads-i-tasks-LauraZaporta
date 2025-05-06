@@ -7,6 +7,7 @@
         public static volatile bool HasSomeoneDiedOfHunger = false; // Senyal global a la que tots els comensals tenen accès
 
         private static readonly object LockerConsole = new object();
+        private static readonly object LockerHunger = new object();
         private readonly int MinThink = 500;
         private readonly int MinEat = 500;
         private readonly int MaxThink = 2000;
@@ -79,58 +80,62 @@
             {
                 while (RemainingFood > 0 && !HasSomeoneDiedOfHunger)
                 {
-                    // Si té gana la simulació acabarà abans de començar un altre cicle
+                    // Pensa
+                    if (HasSomeoneDiedOfHunger) { return; }
+                    lock (LockerConsole)
+                    {
+                        WriteSomethingInColor(ConsoleColor.Yellow, GenerateForegroundConsoleColor(), "pensant...");
+                    }
+                    Thread.Sleep(timeThink);
+
+                    // S'afegeix a la llista d'espera dels palets
+                    // Només es pot afegir un a la llista a la vegada
+                    lock (lockerAdd)
+                    {
+                        LeftChopstick.WantedByGuest.Add(NumComensal);
+                        RightChopstick.WantedByGuest.Add(NumComensal);
+                    }
+
+                    if (HasSomeoneDiedOfHunger) { return; }
+                    lock (LockerConsole)
+                    {
+                        WriteSomethingInColor(ConsoleColor.White, GenerateForegroundConsoleColor(), "esperant els seus palets");
+                    }
+                    // Mentres no estigui a la posició [0] per menjar dels dos palets s'espera
+                    while ((LeftChopstick.WantedByGuest[0] != NumComensal || RightChopstick.WantedByGuest[0] != NumComensal)
+                        && !HasSomeoneDiedOfHunger)
+                    {
+                        Thread.Sleep(1);
+                    }
+
+                    // Menja
+                    // Però primer veu si ja és mor i registra el temps que ha estat en gana
+                    // Si té gana la simulació acabarà
                     if (IsThereHunger())
                     {
                         lock (LockerConsole)
                         {
                             WriteSomethingInColor(ConsoleColor.Black, ConsoleColor.Red, "mort de gana :c");
                         }
-                        HasSomeoneDiedOfHunger = true;
-                        break; // Surt del while
-                    } 
-                    else
-                    {
-                        // Pensa
-                        lock (LockerConsole)
+                        lock (LockerHunger)
                         {
-                            WriteSomethingInColor(ConsoleColor.Yellow, GenerateForegroundConsoleColor(), "pensant...");
+                            HasSomeoneDiedOfHunger = true;
                         }
-                        Thread.Sleep(timeThink);
-
-                        // S'afegeix a la llista d'espera dels palets
-                        // Només es pot afegir un a la llista a la vegada
-                        lock (lockerAdd)
-                        {
-                            LeftChopstick.WantedByGuest.Add(NumComensal);
-                            RightChopstick.WantedByGuest.Add(NumComensal);
-                        }
-
-                        lock (LockerConsole)
-                        {
-                            WriteSomethingInColor(ConsoleColor.White, GenerateForegroundConsoleColor(), "esperant els seus palets");
-                        }
-                        // Mentres no estigui a la posició [0] per menjar dels dos palets s'espera
-                        while (LeftChopstick.WantedByGuest[0] != NumComensal || RightChopstick.WantedByGuest[0] != NumComensal)
-                        {
-                            Thread.Sleep(1);
-                        }
-
-                        // Menja
-                        // Però primer registra el temps que ha estat en gana
-                        TimesOfHunger.Add((DateTime.Now - LastTimeEating).TotalMilliseconds);
-                        lock (LockerConsole)
-                        {
-                            WriteSomethingInColor(ConsoleColor.Green, GenerateForegroundConsoleColor(), "menjant!");
-                        }
-                        Thread.Sleep(timeEat);
-                        LastTimeEating = DateTime.Now;
-                        RemainingFood--;
-
-                        // Deixa els palets
-                        LeftChopstick.WantedByGuest.Remove(NumComensal);
-                        RightChopstick.WantedByGuest.Remove(NumComensal);
+                        return;
                     }
+
+                    TimesOfHunger.Add((DateTime.Now - LastTimeEating).TotalMilliseconds);
+                    lock (LockerConsole)
+                    {
+                        WriteSomethingInColor(ConsoleColor.Green, GenerateForegroundConsoleColor(), "menjant!");
+                    }
+                    Thread.Sleep(timeEat);
+                    LastTimeEating = DateTime.Now;
+                    RemainingFood--;
+
+                    // Deixa els palets
+                    LeftChopstick.WantedByGuest.Remove(NumComensal);
+                    RightChopstick.WantedByGuest.Remove(NumComensal);
                 }
             });
             return comensal;
