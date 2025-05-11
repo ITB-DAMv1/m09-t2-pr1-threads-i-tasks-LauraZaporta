@@ -10,7 +10,7 @@
         static int height = 100;
         static int screenMargin = 5;
         static int speed = 2;
-        static int playerX = width / 2;
+        static int playerX = width / 2 - 15;
         static int playerY = Console.WindowHeight - 2;
         static List<(int x, int y)> asteroids = new List<(int, int)>();
 
@@ -41,7 +41,8 @@
                         MoveAsteroids();
                         if (IsThereCollision())
                         {
-                            Cts.Cancel();
+                            playerX = width / 2 - 15;
+                            asteroids.Clear();
                         }
                     }
                     await Task.Delay(FreqLogic);
@@ -85,7 +86,8 @@
             {
                 lock (asteroids)
                 {
-                    asteroids.Add((r.Next(screenMargin, width - screenMargin + 1), 0));
+                    // Screen margin left exagerated due to a window bug. With -30 everything works fine
+                    asteroids.Add((r.Next(screenMargin, width - screenMargin - 30), 0));
                 }
                 await Task.Delay(300);
             }
@@ -117,7 +119,7 @@
                         if (playerX > screenMargin) { playerX -= speed; }
                         break;
                     case ConsoleKey.D:
-                        if (playerX < width - screenMargin - 1) { playerX += speed; }
+                        if (playerX < width - screenMargin - 30) { playerX += speed; }
                         break;
                     case ConsoleKey.Q:
                         Cts.Cancel();
@@ -132,7 +134,7 @@
             {
                 foreach (var asteroid in asteroids)
                 {
-                    if (asteroid.y == playerY && asteroid.x == playerX)
+                    if (asteroid.y == playerY && Math.Abs(asteroid.x - playerX) <= 1)
                     {
                         return true;
                     }
