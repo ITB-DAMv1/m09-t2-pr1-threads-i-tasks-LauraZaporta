@@ -6,6 +6,8 @@
         const int FreqLogic = 20;
         const char SpaceShip = '^';
 
+        static int numCollisions = 0;
+        static int numAsteroidsGenerated = 0;
         static int width = 150;
         static int height = 100;
         static int screenMargin = 5;
@@ -14,6 +16,7 @@
         static int playerY = Console.WindowHeight - 2;
         static List<(int x, int y)> asteroids = new List<(int, int)>();
 
+        public Statistics statictics { get; private set; }
         public CancellationTokenSource Cts { get; set; }
         public CancellationToken Tk { get; set; }
         public char Asteroid { get; set; }
@@ -50,6 +53,13 @@
             });
             Task inputTask = Task.Run(ShipMovement);
             Task generateAsteroidsTask = Task.Run(GenerateAsteroids);
+            Task emuleWebTask = Task.Run(async () =>
+            {
+                Random r = new Random();
+                int timeWeb = r.Next(30000, 60000 + 1);
+                await Task.Delay(timeWeb);
+                Cts.Cancel();
+            });
 
             await Task.WhenAny(renderTask, logicTask, inputTask, generateAsteroidsTask);
         }
@@ -88,6 +98,7 @@
                 {
                     // Screen margin left exagerated due to a window bug. With -30 everything works fine
                     asteroids.Add((r.Next(screenMargin, width - screenMargin - 30), 0));
+                    numAsteroidsGenerated++;
                 }
                 await Task.Delay(300);
             }
@@ -122,6 +133,11 @@
                         if (playerX < width - screenMargin - 30) { playerX += speed; }
                         break;
                     case ConsoleKey.Q:
+                        statictics = new Statistics
+                        {
+                            NumCollisions = numCollisions,
+                            NumAsteroidsGenerated = numAsteroidsGenerated
+                        };
                         Cts.Cancel();
                         break;
                 }
@@ -136,6 +152,7 @@
                 {
                     if (asteroid.y == playerY && Math.Abs(asteroid.x - playerX) <= 1)
                     {
+                        numCollisions++;
                         return true;
                     }
                 }
