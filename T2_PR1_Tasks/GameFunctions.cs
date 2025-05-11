@@ -43,6 +43,7 @@
                         MoveAsteroids();
                         if (IsThereCollision())
                         {
+                            Console.Beep();
                             numCollisions++;
                             Asteroid = GetRandomAsteroidSprite();
                             playerX = width / 2 - 15;
