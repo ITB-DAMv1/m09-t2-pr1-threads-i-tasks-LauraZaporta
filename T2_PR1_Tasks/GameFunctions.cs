@@ -16,7 +16,7 @@
         static int playerY = Console.WindowHeight - 2;
         static List<(int x, int y)> asteroids = new List<(int, int)>();
 
-        public Statistics statictics { get; private set; }
+        public Statistics statictics { get; private set; } = new Statistics();
         public CancellationTokenSource Cts { get; set; }
         public CancellationToken Tk { get; set; }
         public char Asteroid { get; set; }
@@ -56,8 +56,10 @@
             Task emuleWebTask = Task.Run(async () =>
             {
                 Random r = new Random();
-                int timeWeb = r.Next(30000, 60000 + 1);
+                int timeWeb = r.Next(30000, 60000 + 1); // Hipotetic web charging. From 30 seconds to 1 minute
                 await Task.Delay(timeWeb);
+                statictics.NumCollisions = numCollisions;
+                statictics.NumAsteroidsGenerated = numAsteroidsGenerated;
                 Cts.Cancel();
             });
 
@@ -73,10 +75,12 @@
 
                 // Player
                 Console.SetCursorPosition(playerX, playerY);
+                Console.ForegroundColor = ConsoleColor.Green;
                 Console.Write(SpaceShip);
                 // Asteroids
                 lock (asteroids)
                 {
+                    Console.ForegroundColor = ConsoleColor.Yellow;
                     foreach (var asteroid in asteroids)
                     {
                         Console.SetCursorPosition(asteroid.x, asteroid.y);
