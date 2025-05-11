@@ -19,13 +19,12 @@
         public Statistics statictics { get; private set; } = new Statistics();
         public CancellationTokenSource Cts { get; set; }
         public CancellationToken Tk { get; set; }
-        public char Asteroid { get; set; }
+        public char Asteroid { get; set; } = GetRandomAsteroidSprite();
 
-        public GameFunctions(CancellationTokenSource cts, char asteroidSprite) 
+        public GameFunctions(CancellationTokenSource cts) 
         { 
             Cts = cts; 
             Tk = cts.Token;
-            Asteroid = asteroidSprite;
         }
 
         public async Task RunGame()
@@ -44,6 +43,8 @@
                         MoveAsteroids();
                         if (IsThereCollision())
                         {
+                            numCollisions++;
+                            Asteroid = GetRandomAsteroidSprite();
                             playerX = width / 2 - 15;
                             asteroids.Clear();
                         }
@@ -154,14 +155,15 @@
             {
                 foreach (var asteroid in asteroids)
                 {
-                    if (asteroid.y == playerY && Math.Abs(asteroid.x - playerX) <= 1)
-                    {
-                        numCollisions++;
-                        return true;
-                    }
+                    if (asteroid.y == playerY && Math.Abs(asteroid.x - playerX) <= 1) { return true; }
                 }
                 return false;
             }
+        }
+        private static char GetRandomAsteroidSprite()
+        {
+            Random r = new Random();
+            return (char)r.Next(33, 127); // ASCII
         }
     }
 }

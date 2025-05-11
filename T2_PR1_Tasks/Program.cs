@@ -6,7 +6,7 @@ public class Program
     {
         CancellationTokenSource cts = new CancellationTokenSource();
 
-        GameFunctions game = new GameFunctions(cts, '0');
+        GameFunctions game = new GameFunctions(cts);
         await game.RunGame();
 
         Console.Clear();
