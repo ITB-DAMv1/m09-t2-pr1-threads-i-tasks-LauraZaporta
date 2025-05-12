@@ -3,16 +3,16 @@
 
 ### ENTREGABLE 1:
 
-- _Explicació solució proposada: _Al primer entregable he seguit una estratègia que utilitza llistes d'espera pels palets que es desenvolupa de la següent manera: Cada comensal té dos objectes palets associats (l'esquerre i el dret) i aquests tenen
+- **Explicació solució proposada:** Al primer entregable he seguit una estratègia que utilitza llistes d'espera pels palets que es desenvolupa de la següent manera: Cada comensal té dos objectes palets associats (l'esquerre i el dret) i aquests tenen
   com a propietat una llista d'espera que emmagatzema el número de comensals que volen el palet. Quan comença un cicle d'un fil el comensal pensa, s'afegeix a la llista d'espera dels seus palets i quan ambdós estan disponibles (el comensal està
   a la posició [0] de les dues llistes d'espera dels palets) menja. A l'acabar deixa els palets (s'elimina de les llistes dels palets) i torna a pensar. D'aquesta manera i afegint un bloqueig (lock) a l'acció d'afegir-se a la llista de cada comensal
   s'eviten interbloquejos òptimament i s'evita la mort per gana eficientment.
-- **Dades d'anàlisi: **0 comensals han passat fam, cada comensal ha menjat 10 vegades de mitjana (límit establert per evitar bucle indefinit)...
+- **Dades d'anàlisi:** 0 comensals han passat fam, cada comensal ha menjat 10 vegades de mitjana (límit establert per evitar bucle indefinit)...
 
 
 ### ENTREGABLE 2:
 
-- _Explicació solució proposada: _Al segona entregable he fet ús de diverses funcions i Tasks separades per executar exitosament el joc; per un lloc la funció principal RunGame() que engloba totes les demés funcions i declara com es realitzen
+- **Explicació solució proposada:** Al segona entregable he fet ús de diverses funcions i Tasks separades per executar exitosament el joc; per un lloc la funció principal RunGame() que engloba totes les demés funcions i declara com es realitzen
   les tasks per tal d'executar al mateix temps el render, la lògica, l'input, etc., per altra la funció relativa al Render() que pinta continuament a la pantalla les dades variants de la nau i els asteroides a la freqüència establerta i finalment
   les funcions restants que consisteixen de la lògica (generació d'asteroides, moviment de la nau, col·lisió, generació d'sprites...). També he emprat un cancellation token per parar totes les Tasks quan l'usuari ho decideixi (Q) o quan s'acaba
   de carregar la web hipotètica. Sí que he diferenciat entre programació asíncrona i paral·lela ja que hi ha mètodes que utilizen async i await que eviten el bloquieg del bucle principal (asíncrona) i n'hi ha d'altres que simplement s'executen
